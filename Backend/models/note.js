@@ -25,7 +25,12 @@ const note = sequelize.define('Note', {
   Importance: {
     type: Sequelize.INTEGER,
     allowNull: false,
+  },
+  Is_archived:{
+    type: Sequelize.TINYINT,
+    allowNull: false,
   }
+
 },
   {timestamps:false});
 

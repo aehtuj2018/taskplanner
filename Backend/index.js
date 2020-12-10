@@ -4,7 +4,6 @@ const sequelize = require('./configuration/config');
 const tasks = require ('./models/tasks');
 const notes = require ('./models/note');
 const goals = require ('./models/goal');
-const archived_goals= require('./models/archived_goal')
 const app = express();
 const cors=require('cors');
 const goal = require('./models/goal');
@@ -22,7 +21,7 @@ then(()=>{console.log('connection has been established successfully');})
 
 app.get('/get_tasks',function(req,res){
 
-  tasks.findAll().then(function(result){
+  tasks.findAll({where: {Is_archived:0}}).then(function(result){
 
     res.send(result);
   }).catch(function(err){
@@ -36,7 +35,7 @@ app.get('/get_tasks',function(req,res){
 
 app.get('/get_notes',function(req,res){
 
-    notes.findAll().then(function(result){
+  notes.findAll({where: {Is_archived: 0}}).then(function(result){
   
       res.send(result);
     }).catch(function(err){
@@ -49,7 +48,7 @@ app.get('/get_notes',function(req,res){
 
 app.get('/get_goals',function(req,res){
 
-    goals.findAll().then(function(result){
+    goals.findAll({where: {Is_archived: 0}}).then(function(result){
   
       res.send(result);
     }).catch(function(err){
@@ -62,7 +61,7 @@ app.get('/get_goals',function(req,res){
   //add task
 app.post('/add_task/',function(req,res){
 
-  tasks.create({ ID: req.body.ID , Name: req.body.Name, Description: req.body.Description, Date_of_Start: req.body.Date_of_Start, Date_of_end: req.body.Date_of_end, Status: req.body.Status }).then(function(result){
+  tasks.create({ Name: req.body.Name, Description: req.body.Description, Date_of_Start: req.body.Date_of_Start, Date_of_end: req.body.Date_of_end, Status: req.body.Status, Is_archived:0 }).then(function(result){
 
     res.redirect('/get_tasks');
 
@@ -77,7 +76,7 @@ app.post('/add_task/',function(req,res){
 
 app.post('/add_note/',function(req,res){
 
-  notes.create({ ID: req.body.ID , Name: req.body.Name, Header: req.body.Header, Details: req.body.Details, Importance: req.body.Importance}).then(function(result){
+  notes.create({ Name: req.body.Name, Header: req.body.Header, Details: req.body.Details, Importance: req.body.Importance, Is_archived:0}).then(function(result){
 
     res.redirect('/get_notes');
 
@@ -91,7 +90,7 @@ app.post('/add_note/',function(req,res){
 
 app.post('/add_goal/',function(req,res){
 
-  goal.create({ Description: req.body.Description }).then(function(result){
+  goal.create({ Description: req.body.Description,Is_archived:0 }).then(function(result){
 
     res.redirect('/get_goals');
 
@@ -100,21 +99,6 @@ app.post('/add_goal/',function(req,res){
   });
   
 });
-
-//add goal
-
-app.post('/archive_goal/',function(req,res){
-
-  archived_goals.create({ Description: req.body.Description }).then(function(result){
-
-    res.redirect('/get_goals');
-
-  }).catch(function(err){
-    res.send(err);
-  });
-  
-});
-
 
 
 //get task by ID
@@ -143,45 +127,59 @@ app.get('/get_note/id/:id',function(req,res){
   });
 });
 
-//delete task by ID
 
-app.delete('/delete_task/id/:id',function(req,res,next){
 
-tasks.destroy({ where: {id: req.params.id}}).then(function(result){
 
-    res.redirect('/get_tasks');
-  }).catch(function(err){
-    res.send(err);
-  });
+//update task
+
+
+app.put('/update_task/id/:id',function(req,res,next){
+
+  tasks.update({ Name: req.body.Name, Description: req.body.Description, Date_of_Start: req.body.Date_of_Start, Date_of_end: req.body.Date_of_end, Status: req.body.Status, Is_archived:1 }, { where: {id: req.params.id}}).then(function(result){
   
-});
+      console.log(updated);
 
-//delete notes by ID
-
-app.delete('/delete_note/id/:id',function(req,res,next){
-
-    notes.destroy({ where: {id: req.params.id}}).then(function(result){
-    
-        res.redirect('/get_notes');
-      }).catch(function(err){
-        res.send(err);
-      });
-      
+    }).catch(function(err){
+      res.send(err);
     });
-
-
-    //delete goals by ID
-
-app.delete('/delete_goal/id/:id',function(req,res,next){
-
-    goals.destroy({ where: {id: req.params.id}}).then(function(result){
     
-        res.redirect('/get_goals');
-      }).catch(function(err){
-        res.send(err);
-      });
-      
+  });
+
+
+
+
+  //update note
+
+
+app.put('/update_note/id/:id',function(req,res,next){
+
+  notes.update({ Name: req.body.Name, Header: req.body.Header, Details: req.body.Details, Importance: req.body.Importance, Is_archived:1 }, { where: {id: req.params.id}}).then(function(result){
+  
+      console.log(updated);
+
+    }).catch(function(err){
+      res.send(err);
     });
+    
+  });
+
+
+
+  //update goals
+
+
+app.put('/update_goal/id/:id',function(req,res,next){
+
+  goals.update({ Description: req.body.Description,Is_archived:1  }, { where: {id: req.params.id}}).then(function(result){
+  
+      console.log(updated);
+
+    }).catch(function(err){
+      res.send(err);
+    });
+    
+  });
+
 
 //console message: display server running
 app.listen(3050, function () {

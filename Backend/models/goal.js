@@ -13,6 +13,10 @@ const goal = sequelize.define('goal', {
   Description: {
     type: Sequelize.STRING,
     allowNull: false,
+  },
+  Is_archived:{
+    type: Sequelize.INTEGER,
+    allowNull: false,
   }
 },
   {timestamps:false});
